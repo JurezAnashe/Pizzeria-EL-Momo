@@ -14,6 +14,9 @@ public abstract class Ingrediente {
         this.costo = costo;
     }
 
+    public Ingrediente() {
+    }
+
     public int getId() {
         return id;
     }

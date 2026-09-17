@@ -4,6 +4,10 @@ public class Queso extends Ingrediente implements Preparables {
     private int diasMaduracion;
     private boolean artesanal;
 
+    public Queso() {
+        super();
+    }
+
     public Queso(int diasMaduracion, boolean artesanal, int id, String nombre, int stockDisponible, double costo) {
         super(id, nombre, stockDisponible, costo);
         this.diasMaduracion = diasMaduracion;

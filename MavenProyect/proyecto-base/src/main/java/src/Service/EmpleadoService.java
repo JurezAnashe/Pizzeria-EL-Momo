@@ -1,21 +1,21 @@
 package src.Service;
 
-import src.Dao.EmpleadoDao;
-import src.Dao.DaoImpl.EmpleadoDaoImpl;
+import src.Dao.IngredienteDao;
+import src.Dao.DaoImpl.IngredienteDaoImpl;
 import src.Excepciones.CargoInvalidoException;
 import src.Excepciones.DniDuplicadoException;
 import src.Excepciones.DniInvalidoException;
 import src.Excepciones.SalarioInvalidoException;
-import src.model.Inglediente;
+import src.model.Ingrediente;
 
 import java.util.Set;
 
 public class EmpleadoService {
 
-    private final EmpleadoDao EmpleadoDao;
+    private final IngredienteDao EmpleadoDao;
 
     public EmpleadoService() {
-        this.EmpleadoDao = new EmpleadoDaoImpl();
+        this.EmpleadoDao = new IngredienteDaoImpl();
     }
 
     private static final Set<String> CARGOS_VALIDOS = Set.of("Analista", "Desarrollador", "Gerente", "Soporte");
@@ -24,11 +24,11 @@ public class EmpleadoService {
             throws DniInvalidoException, DniDuplicadoException, SalarioInvalidoException, CargoInvalidoException {
         validarDatos(dni, cargo, salario);
 
-        if (EmpleadoDao.BuscarPorDni(String.valueOf(dni)) != null) {
+        if (EmpleadoDao.BuscarPorId(String.valueOf(dni)) != null) {
             throw new DniDuplicadoException("El DNI ya existe: " + dni);
         }
 
-        Inglediente empleado = new Inglediente(nombre, apellido, String.valueOf(dni), cargo, salario, activo);
+        Ingrediente empleado = new Ingrediente(nombre, apellido, String.valueOf(dni), cargo, salario, activo);
         EmpleadoDao.Crear(empleado);
     }
 
