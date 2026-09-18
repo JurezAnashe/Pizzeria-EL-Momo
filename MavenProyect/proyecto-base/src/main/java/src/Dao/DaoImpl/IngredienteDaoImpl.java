@@ -14,9 +14,9 @@ import java.util.List;
 
 public class IngredienteDaoImpl implements IngredienteDao {
 
-    private static final String url = "jdbc:mysql://localhost:3306/pizzeria";
-    private static final String user = "root";
-    private static final String password = "usbw";
+	private static final String url = "jdbc:mysql://localhost:3307/pizzeria";
+	private static final String user = "root";
+	private static final String password = "";
 
     @Override
     public Connection ConexionBd() throws SQLException {
@@ -25,15 +25,17 @@ public class IngredienteDaoImpl implements IngredienteDao {
 
     @Override
     public void Crear(Ingrediente ingrediente) {
-        String sql = "INSERT INTO ingredientes (id, nombre, stock_disponible, costo) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO ingredientes (id, nombre, stock_disponible, costo, tipo) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection cx = ConexionBd();
-                PreparedStatement ps = cx.prepareStatement(sql)) {
+             PreparedStatement ps = cx.prepareStatement(sql)) {
 
             ps.setInt(1, ingrediente.getId());
             ps.setString(2, ingrediente.getNombre());
             ps.setInt(3, ingrediente.getStockDisponible());
             ps.setDouble(4, ingrediente.getCosto());
+
+            ps.setString(5, ingrediente.getClass().getSimpleName()); 
 
             ps.executeUpdate();
             System.out.println("Ingrediente agregado");
@@ -44,13 +46,13 @@ public class IngredienteDaoImpl implements IngredienteDao {
     }
 
     @Override
-    public List<Object> ListarTodo() {
+    public List<Ingrediente> ListarTodo() {
         String sql = "SELECT id, nombre, stock_disponible, costo FROM ingredientes";
-        List<Object> ingredientes = new ArrayList<>();
+        List<Ingrediente> ingredientes = new ArrayList<>();
 
         try (Connection cx = ConexionBd();
-                PreparedStatement ps = cx.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = cx.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Queso ingrediente = new Queso();
@@ -61,8 +63,6 @@ public class IngredienteDaoImpl implements IngredienteDao {
 
                 ingredientes.add(ingrediente);
             }
-            System.out.println("Ingredientes: " + ingredientes.size());
-
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
