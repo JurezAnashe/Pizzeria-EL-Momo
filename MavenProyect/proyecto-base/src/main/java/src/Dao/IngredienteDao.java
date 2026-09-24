@@ -8,7 +8,11 @@ import java.util.List;
 public interface IngredienteDao {
     void Crear(Ingrediente ingrediente);
 
+    void actualizar(Ingrediente ingrediente);
+
     List<Ingrediente> ListarTodo();
+
+    Ingrediente buscarPorId(int id);
 
     Connection ConexionBd() throws SQLException;
 }

@@ -2,6 +2,7 @@ package src.Service;
 
 import src.Dao.IngredienteDao;
 import src.Dao.DaoImpl.IngredienteDaoImpl;
+import src.Excepciones.StockInsuficienteException;
 import src.model.Ingrediente;
 import src.model.Preparables;
 
@@ -37,5 +38,23 @@ public class IngredienteService {
         } else {
             System.out.println("Error: El ingrediente a preparar es nulo");
         }
+    }
+
+    public void usarIngrediente(int idIngrediente, int cantidadUsar) throws StockInsuficienteException {
+        Ingrediente ing = ingredienteDao.buscarPorId(idIngrediente);
+
+        if (ing == null) {
+            System.out.println("Error: El ingrediente no existe");
+            return;
+        }
+
+        if (ing.getStockDisponible() < cantidadUsar) {
+            throw new StockInsuficienteException(
+                    "No hay suficiente stock de " + ing.getNombre() + ". Disponible: " + ing.getStockDisponible());
+        }
+
+        ing.setStockDisponible(ing.getStockDisponible() - cantidadUsar);
+        ingredienteDao.actualizar(ing);
+        System.out.println("Stock actualizado " + ing.getNombre());
     }
 }
