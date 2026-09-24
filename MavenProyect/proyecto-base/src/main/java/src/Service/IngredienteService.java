@@ -44,17 +44,15 @@ public class IngredienteService {
         Ingrediente ing = ingredienteDao.buscarPorId(idIngrediente);
 
         if (ing == null) {
-            System.out.println("Error: El ingrediente no existe");
-            return;
+            throw new RuntimeException("El ingrediente no existe");
         }
 
         if (ing.getStockDisponible() < cantidadUsar) {
-            throw new StockInsuficienteException(
-                    "No hay suficiente stock de " + ing.getNombre() + ". Disponible: " + ing.getStockDisponible());
+            throw new StockInsuficienteException("No hay suficiente stock para: " + ing.getNombre());
         }
 
         ing.setStockDisponible(ing.getStockDisponible() - cantidadUsar);
+
         ingredienteDao.actualizar(ing);
-        System.out.println("Stock actualizado " + ing.getNombre());
     }
 }

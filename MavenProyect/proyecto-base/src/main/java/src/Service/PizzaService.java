@@ -1,6 +1,7 @@
 package src.Service;
 
 import src.model.Pizza;
+import src.model.Pedido;
 import src.model.Ingrediente;
 import src.Excepciones.StockInsuficienteException;
 
@@ -12,18 +13,27 @@ public class PizzaService {
         this.ingredienteService = ingredienteService;
     }
 
-    public void hacerpizza(Pizza pizza) throws StockInsuficienteException {
+    public Pedido crearPedido(int clienteId, Pizza pizza) throws StockInsuficienteException {
         if (pizza == null || pizza.getIngredientesSeleccionados().isEmpty()) {
             System.out.println("Error: La pizza no tiene ingredientes");
-            return;
+            return null;
         }
-
-        System.out.println("Haciendo el pedido");
 
         for (Ingrediente ing : pizza.getIngredientesSeleccionados()) {
             ingredienteService.usarIngrediente(ing.getId(), 1);
         }
 
-        System.out.println("Pizza lista Precio final: $" + pizza.getPrecioTotal());
+        int idPedido = 0;
+        String estadoInicial = "Pendiente";
+        double total = pizza.getPrecioTotal();
+        boolean entregado = false;
+
+        Pedido nuevoPedido = new Pedido(idPedido, clienteId, estadoInicial, total, entregado, pizza);
+
+        System.out.println("Pedido creado para el cliente ID: " + clienteId);
+        System.out.println("Precio total: $" + total);
+        System.out.println("Stock actualizado");
+
+        return nuevoPedido;
     }
 }

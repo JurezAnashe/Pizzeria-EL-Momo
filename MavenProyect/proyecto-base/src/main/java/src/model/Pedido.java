@@ -6,13 +6,15 @@ public class Pedido {
     private String estado;
     private double precioTotal;
     private boolean pedidoEntregado;
+    private Pizza pizza;
 
-    public Pedido(int id, int clienteId, String estado, double precioTotal, boolean pedidoEntregado) {
+    public Pedido(int id, int clienteId, String estado, double precioTotal, boolean pedidoEntregado, Pizza pizza) {
         this.id = id;
         this.clienteId = clienteId;
         this.estado = estado;
         this.precioTotal = precioTotal;
         this.pedidoEntregado = pedidoEntregado;
+        this.pizza = pizza;
 
     }
 
@@ -54,6 +56,14 @@ public class Pedido {
 
     public void setPedidoEntregado(boolean pedidoEntregado) {
         this.pedidoEntregado = pedidoEntregado;
+    }
+
+    public Pizza getPizza() {
+        return pizza;
+    }
+
+    public void setPizza(Pizza pizza) {
+        this.pizza = pizza;
     }
 
     @Override

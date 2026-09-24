@@ -68,8 +68,18 @@ public class Main {
                             }
 
                             if (seleccionado != null) {
-                                miPizza.agregarIngrediente(seleccionado);
-                                System.out.println("Agregado: " + seleccionado.getNombre());
+                                try {
+                                    if (seleccionado.getStockDisponible() <= 0) {
+                                        throw new src.Excepciones.StockInsuficienteException(
+                                                "No hay stock suficiente para este ingrediente");
+                                    }
+
+                                    miPizza.agregarIngrediente(seleccionado);
+                                    System.out.println("Ingrediente agregado: " + seleccionado.getNombre());
+
+                                } catch (src.Excepciones.StockInsuficienteException e) {
+                                    System.out.println("Error: " + e.getMessage());
+                                }
                             } else {
                                 System.out.println("Error: No existe un ingrediente con ese ID");
                             }
@@ -79,13 +89,12 @@ public class Main {
                     miPizza.preparar();
 
                     try {
-                        pizzaService.hacerpizza(miPizza);
+                        pizzaService.crearPedido(opcion, miPizza);
                         System.out.println("Stock actualizado");
                     } catch (Exception e) {
                         System.out.println("Error al hacer el pedido: " + e.getMessage());
                     }
                     break;
-
                 case 3:
                     System.out.println("\nSaliendo de la pizzeria");
                     break;
