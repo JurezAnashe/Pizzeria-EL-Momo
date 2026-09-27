@@ -55,4 +55,12 @@ public class IngredienteService {
 
         ingredienteDao.actualizar(ing);
     }
+
+    public Ingrediente buscarPorId(int id) {
+        return ingredienteDao.buscarPorId(id);
+    }
+
+    public void actualizarIngrediente(Ingrediente ingrediente) {
+        ingredienteDao.actualizar(ingrediente);
+    }
 }

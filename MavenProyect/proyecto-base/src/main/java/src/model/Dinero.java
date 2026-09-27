@@ -11,7 +11,7 @@ public class Dinero {
         return dineroActual;
     }
 
-    public void getDineroActual(double dineroActual) {
+    public void setDineroActual(double dineroActual) {
         this.dineroActual = dineroActual;
     }
 
