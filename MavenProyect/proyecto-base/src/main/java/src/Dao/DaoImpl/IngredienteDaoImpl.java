@@ -2,8 +2,6 @@ package src.Dao.DaoImpl;
 
 import src.Dao.IngredienteDao;
 import src.model.Ingrediente;
-import src.model.Queso;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -47,7 +45,7 @@ public class IngredienteDaoImpl implements IngredienteDao {
 
     @Override
     public List<Ingrediente> ListarTodo() {
-        String sql = "SELECT id, nombre, stock_disponible, costo FROM ingredientes";
+        String sql = "SELECT id, nombre, stock_disponible, costo, tipo FROM ingredientes";
         List<Ingrediente> ingredientes = new ArrayList<>();
 
         try (Connection cx = ConexionBd();
@@ -55,7 +53,21 @@ public class IngredienteDaoImpl implements IngredienteDao {
                 ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Queso ingrediente = new Queso();
+                String tipo = rs.getString("tipo");
+                Ingrediente ingrediente = null;
+
+                if ("Carne".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Carne(tipo, 0, 0, tipo, 0, 0);
+                } else if ("Queso".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Queso();
+                } else if ("Masa".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Masa(0, false, 0, tipo, 0, 0);
+                } else if ("Salsa".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Salsa(0, 0, tipo, 0, 0);
+                } else {
+                    ingrediente = new src.model.Queso();
+                }
+
                 ingrediente.setId(rs.getInt("id"));
                 ingrediente.setNombre(rs.getString("nombre"));
                 ingrediente.setStockDisponible(rs.getInt("stock_disponible"));
@@ -81,12 +93,24 @@ public class IngredienteDaoImpl implements IngredienteDao {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                Queso q = new Queso();
-                q.setId(rs.getInt("id"));
-                q.setNombre(rs.getString("nombre"));
-                q.setStockDisponible(rs.getInt("stock_disponible"));
-                q.setCosto(rs.getDouble("costo"));
-                ingrediente = q;
+                String tipo = rs.getString("tipo");
+
+                if ("Carne".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Carne(tipo, id, id, tipo, id, id);
+                } else if ("Queso".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Queso();
+                } else if ("Masa".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Masa(id, false, id, tipo, id, id);
+                } else if ("Salsa".equalsIgnoreCase(tipo)) {
+                    ingrediente = new src.model.Salsa(id, id, tipo, id, id);
+                } else {
+                    ingrediente = new src.model.Queso();
+                }
+
+                ingrediente.setId(rs.getInt("id"));
+                ingrediente.setNombre(rs.getString("nombre"));
+                ingrediente.setStockDisponible(rs.getInt("stock_disponible"));
+                ingrediente.setCosto(rs.getDouble("costo"));
             }
         } catch (SQLException e) {
             e.printStackTrace();

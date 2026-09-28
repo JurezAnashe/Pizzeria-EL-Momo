@@ -30,6 +30,10 @@ public class Pizza implements Preparables {
     public void setId(int id) {
         this.id = id;
     }
+    
+    public List<Ingrediente> getIngredientes() {
+        return this.ingredientesSeleccionados;
+    }
 
     public List<Ingrediente> getIngredientesSeleccionados() {
         return ingredientesSeleccionados;

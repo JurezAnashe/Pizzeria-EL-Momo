@@ -1,80 +1,67 @@
 package src.Service;
 
-import src.model.Pizza;
-import src.model.Pedido;
-import src.model.Cliente;
-import src.model.Dinero;
-import src.model.Ingrediente;
+import src.Excepciones.*;
+import src.model.*;
 
 import java.util.List;
-
-import src.Excepciones.DineroInsuficienteException;
-import src.Excepciones.StockInsuficienteException;
 
 public class PizzaService {
 
     private IngredienteService ingredienteService;
+    private double plataGastada;
+    private int erroresCometidos;
+
+    private static final int MAX_INGREDIENTES = 5;
+    private static final int MAX_PEDIDOS_PENDIENTES = 3;
 
     public PizzaService(IngredienteService ingredienteService) {
         this.ingredienteService = ingredienteService;
+        this.plataGastada = 0.0;
+        this.erroresCometidos = 0;
     }
 
-    public Pedido crearPedido(int clienteId, Pizza pizza) throws StockInsuficienteException {
-        if (pizza == null || pizza.getIngredientesSeleccionados().isEmpty()) {
-            System.out.println("Error: La pizza no tiene ingredientes");
-            return null;
+    public void agregarIngredienteAPedido(Pizza pizza, Ingrediente ingrediente) throws IngredientesExcedidosException {
+        if (pizza.getIngredientes() != null && pizza.getIngredientes().size() >= MAX_INGREDIENTES) {
+            erroresCometidos++;
+            throw new IngredientesExcedidosException(
+                    "No se pueden agregar mas de " + MAX_INGREDIENTES + " ingredientes a la pizza.");
+        }
+        pizza.agregarIngrediente(ingrediente);
+    }
+
+    public Pedido crearPedido(int clienteId, Pizza pizza, List<Pedido> pedidosActuales) throws LimitePedidosException {
+        int pedidosPendientesCliente = 0;
+        if (pedidosActuales != null) {
+            for (Pedido p : pedidosActuales) {
+                if (p.getClienteID() == clienteId && !p.isPedidoEntregado()) {
+                    pedidosPendientesCliente++;
+                }
+            }
         }
 
-        for (Ingrediente ing : pizza.getIngredientesSeleccionados()) {
-            ingredienteService.usarIngrediente(ing.getId(), 1);
+        if (pedidosPendientesCliente >= MAX_PEDIDOS_PENDIENTES) {
+            erroresCometidos++;
+            throw new LimitePedidosException(
+                    "El cliente con ID " + clienteId + " tiene demasiados pedidos pendientes");
         }
 
-        int idPedido = 0;
-        String estadoInicial = "Pendiente";
-        double total = pizza.getPrecioTotal();
+        int idGenerado = (int) (Math.random() * 1000) + 1;
+        String estadoInicial = "PENDIENTE";
+        double precio = pizza.getPrecioTotal();
         boolean entregado = false;
 
-        Pedido nuevoPedido = new Pedido(idPedido, clienteId, estadoInicial, total, entregado, pizza);
-
-        System.out.println("Pedido creado para el cliente ID: " + clienteId);
-        System.out.println("Precio total: $" + total);
-        System.out.println("Stock actualizado");
-
+        Pedido nuevoPedido = new Pedido(idGenerado, clienteId, estadoInicial, precio, entregado, pizza);
         return nuevoPedido;
     }
 
-    public void entregarPedido(Pedido pedido, Cliente cliente, Dinero caja) {
-        if (pedido == null || cliente == null || caja == null) {
-            System.out.println("Error: No se puede entregar el pedido");
+    public void listarPedidos(List<Pedido> pedidos) {
+        if (pedidos == null || pedidos.isEmpty()) {
+            System.out.println("No hay pedidos registrados.");
             return;
         }
-
-        pedido.setPedidoEntregado(true);
-        pedido.setEstado("ENTREGADO");
-
-        double dineroActualizado = caja.getDineroActual() + pedido.getPrecioTotal();
-        caja.setDineroActual(dineroActualizado);
-
-        cliente.setPedidosTotales(cliente.getPedidosTotales() + 1);
-
-        System.out.println("Pedido #" + pedido.getId() + " entregado");
-        System.out.println("Dinero total en la caja: $" + caja.getDineroActual());
-        System.out.println(
-                "El cliente " + cliente.getNombre() + " tiene " + cliente.getPedidosTotales() + " pedidos");
-    }
-
-    public void listarPedidos(List<Pedido> listaPedidos) {
-        System.out.println("Pedidos: ");
-        if (listaPedidos == null || listaPedidos.isEmpty()) {
-            System.out.println("No hay pedidos registrados en el sistema");
-            return;
-        }
-
-        for (Pedido p : listaPedidos) {
-            System.out.println(
-                    "ID Pedido: " + p.getId() + " Cliente ID: " + p.getClienteID() + " Estado: " + p.getEstado()
-                            + " Total: $" + p.getPrecioTotal() + " Entregado: "
-                            + (p.isPedidoEntregado() ? "Si" : "No"));
+        for (Pedido p : pedidos) {
+            System.out.println("Pedido ID: " + p.getId() + " Cliente ID: " + p.getClienteID() +
+                    " Estado: " + (p.isPedidoEntregado() ? "ENTREGADO" : "PENDIENTE"));
         }
     }
 
@@ -101,5 +88,41 @@ public class PizzaService {
         System.out.println(
                 "Se sumaron " + cantidadReponer + " unidades a " + ing.getNombre());
         System.out.println("Queda en la caja: $" + caja.getDineroActual());
+    }
+
+    public void entregarPedido(Pedido pedido, Cliente cliente, Dinero caja) {
+        if (pedido == null || cliente == null || caja == null) {
+            System.out.println("Error: No se puede entregar el pedido");
+            return;
+        }
+
+        pedido.setPedidoEntregado(true);
+        pedido.setEstado("ENTREGADO");
+
+        double dineroActualizado = caja.getDineroActual() + pedido.getPrecioTotal();
+        caja.setDineroActual(dineroActualizado);
+
+        cliente.setPedidosTotales(cliente.getPedidosTotales() + 1);
+
+        System.out.println("El pedido " + pedido.getId() + " fue entregado");
+        System.out.println("Dinero total en la caja: $" + caja.getDineroActual());
+        System.out.println(
+                "El cliente " + cliente.getNombre() + " tiene " + cliente.getPedidosTotales() + " pedidos");
+    }
+
+    public void finalizarDia(List<Pedido> pedidos) throws PedidosPendientesException {
+        if (pedidos != null) {
+            for (Pedido p : pedidos) {
+                if (!p.isPedidoEntregado()) {
+                    erroresCometidos++;
+                    throw new PedidosPendientesException(
+                            "No se puede finalizar el dia porque el pedido " + p.getId() + " sigue PENDIENTE");
+                }
+            }
+        }
+
+        System.out.println("Resumen del dia:");
+        System.out.println("Plata Gastada: $" + plataGastada);
+        System.out.println("Errores Cometidos: " + erroresCometidos);
     }
 }
