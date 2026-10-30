@@ -1,5 +1,0 @@
-prompt 1:
-Como comienzo a hacer la parte grafica? y explica
-
-prompt 2:
-A la VentanaPrincipal agregale más // para poder entenderlo, lo mismo para las otras ventanas 
