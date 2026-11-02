@@ -37,13 +37,14 @@ public class VentanaPrincipal extends JFrame {
 
         listaPedidosGlobal = new ArrayList<>();
 
-        // Configuracion visual y de dimensiones de la ventana principal (ajustamos a 8 filas)
+        // Configuracion visual y de dimensiones de la ventana principal (ajustamos a 8
+        // filas)
         setTitle("Pizzeria EL Momo - Sistema de Gestion");
         setSize(450, 550);
-        
-        // MODIFICADO: Ahora usa DISPOSE_ON_CLOSE en lugar de EXIT_ON_CLOSE
+
+        // Nota: juego.java lo cambia a HIDE_ON_CLOSE para que no se pierdan los datos
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        
+
         setLocationRelativeTo(null);
         setLayout(new GridLayout(8, 1, 10, 10));
 
@@ -63,7 +64,7 @@ public class VentanaPrincipal extends JFrame {
         btnListarPedidos.addActionListener(e -> new VentanaPedidos(listaPedidosGlobal).setVisible(true));
         btnReponerStock.addActionListener(e -> reponerStockDialogo());
         btnEntregarPedido.addActionListener(e -> entregarPedidoDialogo());
-        
+
         btnFinalizarDia.addActionListener(e -> {
             try {
                 pizzaService.finalizarDia(listaPedidosGlobal);
@@ -79,7 +80,6 @@ public class VentanaPrincipal extends JFrame {
             }
         });
 
-        // NUEVO: Acción para la opción 7
         btnPrepararPizza.addActionListener(e -> prepararPizzaDialogo());
 
         btnSalir.addActionListener(e -> System.exit(0));
@@ -237,6 +237,31 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
+    /**
+     * Devuelve los ingredientes de un pedido entre paréntesis, ej: "(Queso,
+     * Jamon)".
+     */
+    private String ingredientesEntreParentesis(Pedido p) {
+        if (p.getPizza() == null || p.getPizza().getIngredientes() == null
+                || p.getPizza().getIngredientes().isEmpty()) {
+            return "(sin ingredientes)";
+        }
+        StringBuilder sb = new StringBuilder("(");
+        List<Ingrediente> ings = p.getPizza().getIngredientes();
+        for (int i = 0; i < ings.size(); i++) {
+            sb.append(ings.get(i).getNombre());
+            if (i < ings.size() - 1)
+                sb.append(", ");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    /**
+     * Opción 7: se elige un pedido (con sus ingredientes entre paréntesis) y luego
+     * se ingresan, uno por uno, los IDs de los ingredientes que pidió el personaje.
+     * Al ingresar cada ID se ejecuta preparar() de ese ingrediente.
+     */
     private void prepararPizzaDialogo() {
         if (listaPedidosGlobal == null || listaPedidosGlobal.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No hay pedidos registrados para preparar.", "Aviso",
@@ -245,17 +270,20 @@ public class VentanaPrincipal extends JFrame {
         }
 
         try {
+            // 1) Elegir el pedido, mostrando los ingredientes al lado entre ()
             StringBuilder sb = new StringBuilder("Pedidos disponibles:\n\n");
             for (Pedido p : listaPedidosGlobal) {
                 sb.append("ID Pedido: ").append(p.getId())
-                  .append(" - Cliente ID: ").append(p.getClienteID()).append("\n");
+                        .append(" - Cliente ID: ").append(p.getClienteID())
+                        .append(" ").append(ingredientesEntreParentesis(p)).append("\n");
             }
 
-            String idStr = JOptionPane.showInputDialog(this, 
+            String idStr = JOptionPane.showInputDialog(this,
                     sb.toString() + "\nIngresa el ID del pedido que deseas preparar:",
                     "Preparar Pizza", JOptionPane.QUESTION_MESSAGE);
-            
-            if (idStr == null) return;
+
+            if (idStr == null)
+                return;
             int idPedidoPrep = Integer.parseInt(idStr.trim());
 
             Pedido pedidoParaPreparar = null;
@@ -266,27 +294,72 @@ public class VentanaPrincipal extends JFrame {
                 }
             }
 
-            if (pedidoParaPreparar != null && pedidoParaPreparar.getPizza() != null) {
-                Pizza pizzaSeleccionada = pedidoParaPreparar.getPizza();
-                
-                if (pizzaSeleccionada.getIngredientes() != null && !pizzaSeleccionada.getIngredientes().isEmpty()) {
-                    for (Ingrediente ing : pizzaSeleccionada.getIngredientes()) {
-                        ing.preparar();
-                    }
-                    JOptionPane.showMessageDialog(this, 
-                            "La pizza del pedido ID: " + pedidoParaPreparar.getId() + 
-                            " está completamente lista para despachar.", 
-                            "Preparación Completa", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this, 
-                            "El pedido no contiene ingredientes registrados en la pizza.", 
-                            "Aviso", JOptionPane.WARNING_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, 
-                        "Error: No se encontró un pedido con ese ID.", 
+            if (pedidoParaPreparar == null || pedidoParaPreparar.getPizza() == null) {
+                JOptionPane.showMessageDialog(this,
+                        "Error: No se encontró un pedido con ese ID.",
                         "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+
+            Pizza pizzaSeleccionada = pedidoParaPreparar.getPizza();
+            if (pizzaSeleccionada.getIngredientes() == null || pizzaSeleccionada.getIngredientes().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "El pedido no contiene ingredientes registrados en la pizza.",
+                        "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // 2) Ingredientes pendientes de preparar (copia para ir quitando los hechos)
+            List<Ingrediente> pendientes = new ArrayList<>(pizzaSeleccionada.getIngredientes());
+
+            while (!pendientes.isEmpty()) {
+                StringBuilder lista = new StringBuilder("Pedido ID: " + pedidoParaPreparar.getId()
+                        + "\nIngredientes pendientes:\n\n");
+                for (Ingrediente ing : pendientes) {
+                    lista.append("ID: ").append(ing.getId())
+                            .append(" - ").append(ing.getNombre()).append("\n");
+                }
+
+                String ingStr = JOptionPane.showInputDialog(this,
+                        lista.toString() + "\nIngresa el ID del ingrediente que pidió el personaje (o 0 para salir):",
+                        "Preparar Pizza", JOptionPane.QUESTION_MESSAGE);
+
+                if (ingStr == null)
+                    return;
+
+                int idIng = Integer.parseInt(ingStr.trim());
+                if (idIng == 0) {
+                    JOptionPane.showMessageDialog(this,
+                            "Preparación interrumpida. Faltan " + pendientes.size() + " ingrediente(s).",
+                            "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                // Buscar ese ingrediente entre los pendientes
+                Ingrediente encontrado = null;
+                for (Ingrediente ing : pendientes) {
+                    if (ing.getId() == idIng) {
+                        encontrado = ing;
+                        break;
+                    }
+                }
+
+                if (encontrado == null) {
+                    JOptionPane.showMessageDialog(this,
+                            "Ese ingrediente no está pendiente en este pedido.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    continue;
+                }
+
+                // Acá aparece la interfaz / acción de preparar()
+                encontrado.preparar();
+                pendientes.remove(encontrado);
+            }
+
+            JOptionPane.showMessageDialog(this,
+                    "La pizza del pedido ID: " + pedidoParaPreparar.getId() +
+                            " está completamente lista para despachar.",
+                    "Preparación Completa", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Por favor, ingresa un número válido.", "Error",

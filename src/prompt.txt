@@ -3,3 +3,12 @@ Como comienzo a hacer la parte grafica? y explica
 
 prompt 2:
 A la VentanaPrincipal agregale más // para poder entenderlo, lo mismo para las otras ventanas 
+
+prompt 3:
+Como comienzo a hacer la parte grafica, donde se mueva el personaje ahi por la pantalla
+
+prompt 4: Agregale un fondo, que se le pueda cambiar la imagen al personaje
+
+prompt 5: hace que al pasar la puerta blanca aparezca en otra escena 
+
+prompt 6: agrega 2 personajes más que se sienten random en cualquier silla y que no cambien de lugar al cambiar de escena
