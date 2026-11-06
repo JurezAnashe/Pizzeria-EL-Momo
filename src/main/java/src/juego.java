@@ -11,6 +11,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,6 +93,8 @@ public class juego extends JFrame implements ActionListener {
     private final Image fondoSalonImg;
     private final Image fondoCocinaImg;
 
+    private final Musica musica = new Musica("/src/audio/musica.wav");
+
     private final JPanel panelJuego;
     private final Timer timer;
     private VentanaPrincipal ventanaGestion; // se crea una sola vez y se reutiliza
@@ -128,6 +132,16 @@ public class juego extends JFrame implements ActionListener {
         timer = new Timer(16, this);
         timer.start();
 
+        musica.setVolumen(0.5f);
+        musica.reproducirEnBucle();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                musica.detener();
+            }
+        });
+
         panelJuego.requestFocusInWindow();
     }
 
@@ -150,6 +164,16 @@ public class juego extends JFrame implements ActionListener {
                     return;
                 }
                 int key = e.getKeyCode();
+
+                // Tecla M: silenciar / reactivar la música
+                if (key == KeyEvent.VK_M) {
+                    if (musica.estaSonando()) {
+                        musica.pausar();
+                    } else {
+                        musica.reproducirEnBucle();
+                    }
+                }
+
                 if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) {
                     velocidadX = -VELOCIDAD_PASO;
                 }
