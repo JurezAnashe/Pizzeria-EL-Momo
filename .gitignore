@@ -1,0 +1,21 @@
+# Maven
+target/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Credenciales y configuración local
+config.properties
+.env
+
+# Notas personales
+src/main/java/src/prompt.txt
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
